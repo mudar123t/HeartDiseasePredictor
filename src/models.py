@@ -1,25 +1,29 @@
 """
 models.py
 ---------
-Reusable training functions for imbalanced datasets:
+Reusable training functions for various ML models:
+
 - KNN
 - Decision Tree
 - SVM
 - Gradient Boosting
 - AdaBoost
 - XGBoost
+- Balanced Random Forest
 
-All tree-based models handle class imbalance via `class_weight` or `scale_pos_weight`.
+Also includes:
+- model evaluation
+- threshold tuning
 """
 
-from xgboost import XGBClassifier
 import pandas as pd
+import numpy as np
+
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import GradientBoostingClassifier, AdaBoostClassifier
-from imblearn.ensemble import BalancedRandomForestClassifier
-import numpy as np
+from xgboost import XGBClassifier
 
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
@@ -28,7 +32,7 @@ from sklearn.metrics import (
 
 
 # ---------------------------------------------------------
-# TRAINING FUNCTIONS
+# MODEL TRAINERS
 # ---------------------------------------------------------
 
 def train_knn(X_train, y_train, n_neighbors=7):
@@ -38,38 +42,44 @@ def train_knn(X_train, y_train, n_neighbors=7):
 
 
 def train_decision_tree(X_train, y_train, random_state=42):
-    # Use class_weight to handle imbalance
-    model = DecisionTreeClassifier(class_weight="balanced", random_state=random_state)
+    model = DecisionTreeClassifier(
+        class_weight="balanced",
+        max_depth=4,
+        min_samples_split=20,
+        min_samples_leaf=10,
+        random_state=random_state
+    )
     model.fit(X_train, y_train)
     return model
 
 
 def train_svm(X_train, y_train, kernel="rbf", C=2.0, random_state=42):
-    # Option: weight classes manually
-    model = SVC(kernel=kernel, C=C, probability=True, class_weight="balanced", random_state=random_state)
+    model = SVC(
+        kernel=kernel,
+        C=C,
+        probability=True,
+        class_weight="balanced",
+        random_state=random_state
+    )
     model.fit(X_train, y_train)
     return model
 
 
-def train_gradient_boosting(X_train, y_train, n_estimators=400, learning_rate=0.1, random_state=42):
-    model = GradientBoostingClassifier(
-        n_estimators=n_estimators,
-        learning_rate=learning_rate,
-        random_state=random_state
-    )
-    # GradientBoostingClassifier does not support class_weight, so we rely on SMOTE
+def train_gradient_boosting(X_train, y_train, n_estimators=200, learning_rate=0.05, max_depth=3, random_state=42):
+    model = GradientBoostingClassifier(n_estimators=n_estimators, learning_rate=learning_rate, max_depth=max_depth, random_state=random_state)
     model.fit(X_train, y_train)
     return model
 
 
 def train_adaboost(X_train, y_train, n_estimators=200, learning_rate=0.05, random_state=42):
-    from sklearn.tree import DecisionTreeClassifier
-    from sklearn.ensemble import AdaBoostClassifier
-
-    base_est = DecisionTreeClassifier(max_depth=3, class_weight="balanced")
+    base_tree = DecisionTreeClassifier(
+        max_depth=4,
+        class_weight="balanced",
+        min_samples_leaf=5
+    )
 
     model = AdaBoostClassifier(
-        estimator=base_est,          # ← FIX HERE
+        estimator=base_tree,
         n_estimators=n_estimators,
         learning_rate=learning_rate,
         random_state=random_state
@@ -79,72 +89,68 @@ def train_adaboost(X_train, y_train, n_estimators=200, learning_rate=0.05, rando
     return model
 
 
-
 def train_xgboost(X_train, y_train, n_estimators=400, learning_rate=0.05, random_state=42):
-    # Handle imbalance with scale_pos_weight
     pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
     model = XGBClassifier(
-        n_estimators=400,
+        # n_estimators=n_estimators,
+        # learning_rate=learning_rate,
+        # max_depth=3,
+        # scale_pos_weight=pos_weight * 1.2,
+        # subsample=0.8,
+        # colsample_bytree=0.8,
+        # random_state=random_state,
+        # eval_metric="logloss",
+        # reg_alpha=0.5,
+        # reg_lambda=1.0,
+        max_depth=3,
+        n_estimators=150,
         learning_rate=0.05,
-        max_depth=4,
-        scale_pos_weight=pos_weight * 1.2,
         subsample=0.8,
         colsample_bytree=0.8,
-        random_state=42,
-        eval_metric="logloss",
-        # use_label_encoder=False
-    )
-    model.fit(X_train, y_train)
-    return model
+        eval_metric="logloss"
 
-def train_balanced_rf(X_train, y_train, random_state=42):
-    model = BalancedRandomForestClassifier(
-        n_estimators=400,
-        random_state=random_state
     )
-    model.fit(X_train, y_train)
+    # use a small validation split from training (do not use test)
+    from sklearn.model_selection import train_test_split
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, stratify=y_train, random_state=random_state)
+    model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)], verbose=False)
     return model
-
 
 # ---------------------------------------------------------
-# PREDICTION & EVALUATION HELPERS
+# EVALUATION HELPERS
 # ---------------------------------------------------------
 
 def evaluate_model(model, X_test, y_test, model_name="Model"):
     y_pred = model.predict(X_test)
-    print(f"===== {model_name} =====")
+
+    print(f"\n===== {model_name} =====")
     print("Accuracy:", accuracy_score(y_test, y_pred))
-    print("Precision:", precision_score(y_test, y_pred))
-    print("Recall:", recall_score(y_test, y_pred))
-    print("F1 Score:", f1_score(y_test, y_pred))
-    print("\nClassification Report:\n")
-    print(classification_report(y_test, y_pred))
+    print("Precision:", precision_score(y_test, y_pred, zero_division=0))
+    print("Recall:", recall_score(y_test, y_pred, zero_division=0))
+    print("F1 Score:", f1_score(y_test, y_pred, zero_division=0))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred, zero_division=0))
     print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
     print("========================\n")
+
     return {
         "model": model_name,
         "accuracy": accuracy_score(y_test, y_pred),
-        "precision": precision_score(y_test, y_pred),
-        "recall": recall_score(y_test, y_pred),
-        "f1": f1_score(y_test, y_pred)
+        "precision": precision_score(y_test, y_pred, zero_division=0),
+        "recall": recall_score(y_test, y_pred, zero_division=0),
+        "f1": f1_score(y_test, y_pred, zero_division=0)
     }
 
 
-def get_probabilities(model, X_test):
-    return model.predict_proba(X_test)[:, 1]
-
-
-# Threshold Tuning funciton
 def evaluate_thresholds(model, X_test, y_test, model_name="Model"):
-    """Evaluate performance across thresholds 0.1–0.9."""
+    """Evaluate performance at thresholds from 0.05 to 0.95."""
     if not hasattr(model, "predict_proba"):
         print(f"{model_name} does not support predict_proba. Skipping threshold tuning.")
         return None
 
-    probs = model.predict_proba(X_test)[:, 1]  # positive class probability
+    probs = model.predict_proba(X_test)[:, 1]
 
     thresholds = np.linspace(0.05, 0.95, 19)
-    rows = []
+    results = []
 
     for t in thresholds:
         preds = (probs >= t).astype(int)
@@ -153,6 +159,6 @@ def evaluate_thresholds(model, X_test, y_test, model_name="Model"):
         r = recall_score(y_test, preds, zero_division=0)
         f = f1_score(y_test, preds, zero_division=0)
 
-        rows.append((t, p, r, f))
+        results.append((t, p, r, f))
 
-    return pd.DataFrame(rows, columns=["threshold", "precision", "recall", "f1"])
+    return pd.DataFrame(results, columns=["threshold", "precision", "recall", "f1"])
