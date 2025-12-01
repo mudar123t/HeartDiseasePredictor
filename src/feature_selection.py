@@ -10,8 +10,6 @@ This module provides reusable feature selection functions for:
 
 These functions are used in notebooks for visual evaluation and
 support the modeling pipeline.
-
-Author: (Your Name)
 """
 
 import pandas as pd
@@ -161,3 +159,18 @@ def summarize_all_methods(X, y, n_features=10):
         "Decision Tree Importance": tree_feature_importance(X, y)
     }
 
+
+
+def vote_feature_selection(X, y, top_n=10, min_votes=2):
+    chi = chi_square_test(X, y).head(top_n)["Feature"].tolist()
+    anova = anova_test(X, y).head(top_n)["Feature"].tolist()
+    mi = mutual_information_test(X, y).head(top_n)["Feature"].tolist()
+    rfe = rfe_selection(X, y, n_features=top_n)
+    rfe = rfe[rfe["Selected"] == True]["Feature"].tolist()
+    tree = tree_feature_importance(X, y).head(top_n)["Feature"].tolist()
+
+    all_features = chi + anova + mi + rfe + tree
+    votes = pd.Series(all_features).value_counts()
+
+    selected = votes[votes >= min_votes].index.tolist()
+    return selected, votes
