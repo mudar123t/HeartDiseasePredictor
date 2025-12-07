@@ -1,21 +1,116 @@
-# Working with the old Dataset
-1) run the project on the old (heart_disease) dataset inside "notebooks" foleder,
-2) we did the exploration inside "01_exploration.ipynb", then the preprocessing inside "02_preprocessing.ipynb",
-3) we did some feature engineering inside "03_feature_selection.ipynb"
-  with the help of "feature_selection.py" file inside src folder
-4) we run the modeling inside "04_modeling.ipynb" file, and got bad training output,
-5) we noticed that there could be leak because the feature selection and the training is happening in seperated files
-  so we moved our process into a single file named "04_feature_modeling.ipynb" where we did everyting in a single place
-6) we kept getting bad resutls which was suspicios, so we ran some codes to check if the problem was from the dataset
-  and indeed it was from the dataset, so we found another dataset from kaggle (https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset)
-  to check it, we ran the previouse ran codes to check the dataset and we got a better resutls so we moved into the next part of the project
-# Working with the new Dataset
-1) we did all the process and the project for the new dataset inside "notebooks_new" folder
-2) inside that folder we ran a similar code that was inside "01_exploration" to check the data and there was 0 null values
-  so we moved to the "02_feature_modeling" to apply the feature selection and the training,
-3) since the new dataset had fewer columns, we took all of them, but still we ran the feature methods in order to show the most important ones
-4) we run the old models (without chaing their variabels) on the new dataset, and we got a whole different results
-  instead of getting bad results (values between the 0.2 and 0.6) now we noticed that there is overfitting that is happeninig
-5) we started optimising the models.py files variabels to get the best outcome without overfitting
-6) after so many tries we got the a data that is near desired one, with only 2 models that are near to overfitting
-7) we saved the resutls and started runing the evaluations and showing the data inside "03_evaluation" file with plot to represent the data we got
+# Heart Disease Prediction Project
+
+This project uses machine learning to predict the risk of heart disease based on medical features.  
+The goal is to test different models understand the effect of data quality and build a stable prediction system.
+
+---
+
+## Project Structure
+
+project/
+│
+├── notebooks/ # Work on the old dataset
+│ ├── 01_exploration.ipynb
+│ ├── 02_preprocessing.ipynb
+│ ├── 03_feature_selection.ipynb
+│ ├── 04_modeling.ipynb
+│ └── 04_feature_modeling.ipynb
+│
+├── notebooks_new/ # Work on the new dataset
+│ ├── 01_exploration_new.ipynb
+│ ├── 02_feature_modeling_new.ipynb
+│ └── 03_evaluation.ipynb
+│
+├── src/
+│ ├── feature_selection.py
+│ └── models.py
+│
+├── data/
+│ ├── heart_disease.csv # Old dataset
+│ └── heart.csv # New dataset
+│
+└── results/
+├── model_results.csv
+└── evaluation_plots
+
+
+
+---
+
+## Datasets
+
+### **Old Dataset**
+- Produced weak and unstable results.  
+- Feature selection was inconsistent and models performed poorly.  
+- Data quality issues affected model learning.
+
+### **New Dataset**
+- A second dataset from Kaggle with no missing values.  
+- Clearer feature patterns and better structure.  
+- Models performed much better and more consistently.
+
+---
+
+## Main Steps
+
+### **1. Exploration**
+We checked dataset structure looked for missing values and studied feature distributions.
+
+### **2. Preprocessing**
+We encoded categorical features scaled numerical values and split the data into training and testing sets.
+
+### **3. Feature Selection**
+We used statistical and model based methods to find the most important features especially for the old dataset.
+
+### **4. Modeling**
+We trained several machine learning models including  
+KNN Decision Tree SVM Gradient Boosting AdaBoost and XGBoost.  
+We compared accuracy precision recall and F1 scores.
+
+### **5. Optimization**
+Some models showed signs of overfitting.  
+We tuned hyperparameters to reach more balanced performance.
+
+### **6. Evaluation**
+We analyzed metrics confusion matrices feature importance and ROC curves.
+
+---
+
+## Key Findings
+
+- The old dataset produced weak and unstable results.  
+- The new dataset gave higher accuracy and better model stability.  
+- Boosting models performed the best especially AdaBoost and Gradient Boosting.  
+- Data quality had a major effect on the final performance.
+
+---
+
+## Technologies Used
+
+- Python  
+- pandas numpy matplotlib seaborn  
+- scikit-learn  
+- XGBoost  
+- Jupyter Notebook  
+
+---
+
+## How to Run the Project
+
+### 1. Install required libraries
+
+pip install -r requirements.txt
+
+
+
+### 2. Open the notebooks in the `notebooks_new` folder  
+### 3. Run the exploration modeling and evaluation steps in order  
+### 4. Check the `results` folder for metrics and plots  
+
+---
+
+## Credits
+
+This project was completed as part of the Introduction to Data Science course.  
+**Instructor:** Zeki Kus  
+**Students:** Mudar Shawakh and MHD Alhabeb Alshalah  
