@@ -9,29 +9,29 @@ The goal is to test different models understand the effect of data quality and b
 
 project/
 │
-├── notebooks/ # Work on the old dataset
-│ ├── 01_exploration.ipynb
-│ ├── 02_preprocessing.ipynb
-│ ├── 03_feature_selection.ipynb
-│ ├── 04_modeling.ipynb
-│ └── 04_feature_modeling.ipynb
+├── notebooks/                # Work on the old dataset
+│   ├── 01_exploration.ipynb
+│   ├── 02_preprocessing.ipynb
+│   ├── 03_feature_selection.ipynb
+│   ├── 04_modeling.ipynb
+│   └── 04_feature_modeling.ipynb
 │
-├── notebooks_new/ # Work on the new dataset
-│ ├── 01_exploration_new.ipynb
-│ ├── 02_feature_modeling_new.ipynb
-│ └── 03_evaluation.ipynb
+├── notebooks_new/            # Work on the new dataset
+│   ├── 01_exploration_new.ipynb
+│   ├── 02_feature_modeling_new.ipynb
+│   └── 03_evaluation.ipynb
 │
 ├── src/
-│ ├── feature_selection.py
-│ └── models.py
+│   ├── feature_selection.py
+│   └── models.py
 │
 ├── data/
-│ ├── heart_disease.csv # Old dataset
-│ └── heart.csv # New dataset
+│   ├── heart_disease.csv              # Old dataset
+│   └── heart.csv                      # New dataset
 │
 └── results/
-├── model_results.csv
-└── evaluation_plots
+    ├── model_results.csv
+    └── evaluation_plots
 
 
 
