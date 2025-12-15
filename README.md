@@ -114,3 +114,23 @@ pip install -r requirements.txt
 This project was completed as part of the Introduction to Data Science course.  
 **Instructor:** Zeki Kus  
 **Students:** Mudar Shawakh and MHD Alhabeb Alshalah  
+
+---
+
+## Notes:
+- Accuracy: How often is the model correct overall?
+- Precision: When the model says YES, how often is it right?
+- Recall (Sensitivity): Of all the real YES cases, how many did we catch?
+- F1-Score: Balanced score between Precision and Recall
+
+- Confusion Matrix:
+TP (True Positive): correct YES
+TN (True Negative): correct NO
+FP (False Positive): false alarm
+FN (False Negative): missed case
+
+- ROC: shows how your model behaves at all thresholds, not just one. 
+X-axis: False Positive Rate (FPR)
+Y-axis: True Positive Rate (TPR = Recall)
+
+- AUC: compresses the ROC curve into one number.
